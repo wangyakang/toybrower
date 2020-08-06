@@ -1,3 +1,20 @@
+/**
+ * @describe http请求
+ */
+
+ class Request {
+    constructor (options = {}) {
+        this.method = options.method || 'get';
+        this.path = options.path || '/';
+        this.host = options.host || '';
+        this.post = options.post || '8080';
+        this.headers = options.headers || {};
+        this.body = options.body || {};
+
+        if (this.headers)
+    }
+ }
+
 async (function () {
     let request = new Request({
         method: 'get',
