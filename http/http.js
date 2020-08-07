@@ -1,5 +1,6 @@
 var net = require('net');
 const { rejects } = require('assert');
+const { debug } = require('console');
 
 /**
  * @describe http请求
@@ -10,7 +11,7 @@ class Request {
         this.method = options.method || 'get';
         this.path = options.path || '/';
         this.host = options.host || '';
-        this.post = options.post || '8080';
+        this.port = options.port || '8080';
         this.headers = options.headers || {};
         this.body = options.body || {};
         this.bodyText = '';
@@ -28,21 +29,28 @@ class Request {
         this.headers['Content-Length'] = this.bodyText.length;
     }
     send (connection) {
-        return new Promise (_ => {
+        return new Promise ((resolve, rejects) => {
+            const parser = new ResponseParser();
             if (connection) {
                 connection.write(this.resToString());
             } else {
+                console.log(this.port, this.host);
                 connection = net.createConnection({
-                    post: this.post,
+                    port: this.port,
                     host: this.host
                 }, _ => {
+                    // console.log(this.resToString(), 'request str');
                     connection.write(this.resToString());
                 })
-
             }
             connection.on('data', data => {
-                console.log(data.toString(), 999);
+                console.log(data.toString(), 'response data str');
                 // ...
+                parser.receive(data.toString());
+                if (parser.isFinished) {
+                    resolve(paraser.response);
+                    connection.end();
+                }
             })
             connection.on('error', err => {
                 console.error(err);
@@ -57,7 +65,16 @@ class Request {
         // Host: www.google.com     // headers
         // 
         // name=wyk&sex=1           // body
-        return `${this.method} ${this.path} HTTP\r\n ${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r\n\r\n${this.bodyText}`
+        return `${this.method} ${this.path} HTTP/1.1\r\n${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r\n\r\n${this.bodyText}`
+    }
+}
+
+class ResponseParser {
+    constructor () {
+
+    }
+    receive (string) {
+        console.log(string, 'response data str');
     }
 }
 
@@ -65,8 +82,8 @@ async function httpserver() {
     let request = new Request({
         method: 'POST',
         path: '/',
-        host: 'localhost',
-        port: '8080',
+        host: '127.0.0.1',
+        port: '8000',
         headers: {
             'Accept': '*'
         },
@@ -75,6 +92,6 @@ async function httpserver() {
         }
     });
     let response = await request.send();
-    console.log(response, 'Response back body');
+    console.log(11, 'Response back body', response);
 }
 httpserver();
