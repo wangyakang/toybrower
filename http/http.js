@@ -1,6 +1,7 @@
 var net = require('net');
 const { rejects } = require('assert');
 const { debug } = require('console');
+const { runInThisContext } = require('vm');
 
 /**
  * @describe http请求
@@ -34,7 +35,7 @@ class Request {
             if (connection) {
                 connection.write(this.resToString());
             } else {
-                console.log(this.port, this.host);
+                // console.log(this.port, this.host);
                 connection = net.createConnection({
                     port: this.port,
                     host: this.host
@@ -71,11 +72,38 @@ class Request {
 
 class ResponseParser {
     constructor () {
+        // 状态控制
+        this.WAITING_STATUS_LINE = false;
+        this.WAITING_STATUS_LINE_END = false;
+        this.WAITING_HEADER_KEY = false;
+        this.WAITING_HEADER_SPACE = false;
+        this.WAITING_HEADER_VALUE = false;
+        this.WAITING_HEADER_END = false;
+        this.WAITING_HEADER_BLOCK = false;
+        this.WAITING_BODY = false;
 
+        // 数据存储
+        this.statusLine = '';
+        this.header = {};
+        this.headerName = '';
+        this.headerValue = '';
+        this.bodyParse = null;
     }
     receive (string) {
-        console.log(string, 'response data str');
+        for (let i = 0; i < string.length; i++) {
+            this.receiveStart(string.charAt(i));
+        }
+        this.isFinished = this.WAITING_BODY
     }
+    receiveStart (char) {
+        if (this.WAITING_STATUS_LINE) {
+            return receiveLine;
+        } else {
+            
+        }
+        console.log(char, 'char');
+    }
+    receiveLine (char)
 }
 
 async function httpserver() {
@@ -83,7 +111,7 @@ async function httpserver() {
         method: 'POST',
         path: '/',
         host: '127.0.0.1',
-        port: '8000',
+        port: '8001',
         headers: {
             'Accept': '*'
         },
