@@ -103,7 +103,9 @@ class ResponseParser {
         }
         console.log(char, 'char');
     }
-    receiveLine (char)
+    receiveLine (char) {
+        
+    }
 }
 
 async function httpserver() {
